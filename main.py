@@ -1,5 +1,5 @@
-from .instance import TemperatureInstance
-from .predictor import TemperaturePredictor
+from instance import TemperatureInstance
+from predictor import TemperaturePredictor
 
 DATA_PATH = 'data/processed_data_inner.csv'
 
@@ -7,6 +7,7 @@ DATA_PATH = 'data/processed_data_inner.csv'
 def main():
     instance = TemperatureInstance(DATA_PATH)
     predictor = TemperaturePredictor(instance)
+    predictor.predict()
 
 if __name__ == '__main__':
     main()
