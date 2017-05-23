@@ -1,3 +1,5 @@
+keras=2.0.4
+matplotlib==2.0.2
 numpy==1.12.1
 pandas==0.20.1
 protobuf==3.3.0
