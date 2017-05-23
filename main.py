@@ -19,6 +19,7 @@ def main():
     print("python:{}, keras:{}, tensorflow: {}".format(sys.version, keras.__version__, tf.__version__))
     instance = TemperatureInstance(DATA_PATH)
     # predictor = TemperaturePredictor(instance)
+    # predictor.predict()
 
     xntrn = round(len(instance.x_mat) * 0.9)
 
@@ -62,7 +63,6 @@ def main():
     plt.plot(yy_test[:100][:, 1], ":")
     plt.legend(["Prediction 0", "Prediction 1", "Test 0", "Test 1"])
     plt.show()
-
 
 if __name__ == '__main__':
     main()
