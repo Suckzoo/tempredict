@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import os
 import tensorflow as tf
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers.core import Dense, Activation
 from keras.layers.recurrent import LSTM
 import matplotlib.pylab as plt
@@ -39,20 +39,24 @@ def main():
 
     in_neurons = len(x_label)
     out_neurons = len(y_label)
-    hidden_neurons = 100
-    data_interval = 20
+    hidden_neurons = 50
+    data_interval = 50
 
-    model = Sequential()
-    model.add(LSTM(hidden_neurons, return_sequences=False,
-                   input_shape=(None, in_neurons)))
-    model.add(Dense(out_neurons, input_dim=hidden_neurons, activation="linear"))
-    # model.add(Activation("linear"))
-    model.compile(loss="mean_squared_error", optimizer="rmsprop")
+    try:
+        model = load_model("model.h5")
+    except Exception:
+        model = Sequential()
+        model.add(LSTM(hidden_neurons, return_sequences=False,
+                       input_shape=(None, in_neurons), activation='sigmoid'))
+        model.add(Dense(out_neurons, input_dim=hidden_neurons, activation="linear"))
+        model.add(Activation("linear"))
+        model.compile(loss="mean_squared_error", optimizer="rmsprop")
     model.summary()
 
     x_data = []
     y_data = []
     test_index = random.randint(0, len(x_raw)-1)
+    # test_index = len(x_raw)-1
     x_t_data = x_raw.pop(test_index)
     y_t_data = y_raw.pop(test_index)
     for idx in range(len(x_raw)):
@@ -67,7 +71,13 @@ def main():
     yy_train = np.array(y_data)
     xx_test = np.array(x_t_data)
     yy_test = np.array(y_t_data)
-    model.fit(xx_train, yy_train, batch_size=20, epochs=100, validation_split=0.05, verbose=2)
+    print("training x: ", np.shape(xx_train))
+    print("training y: ", np.shape(yy_train))
+    print("testing x: ", np.shape(xx_test))
+    print("testing y: ", np.shape(yy_test))
+    model.fit(xx_train, yy_train, batch_size=50, epochs=5, validation_split=0.05, verbose=2)
+    model.save("model.h5")
+    model.save_weights("model_w.h5")
 
     predicted = model.predict(xx_test)
 
