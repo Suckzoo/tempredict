@@ -18,10 +18,11 @@ DATA_DIR = os.path.join(os.curdir, "data")
 
 def main():
     print("python:{}, keras:{}, tensorflow: {}".format(sys.version, keras.__version__, tf.__version__))
-    instance = TemperatureInstance(os.path.join(DATA_DIR, "processed_data_inner.csv"))
+    instance = TemperatureInstance(os.path.join(DATA_DIR, "data_01.csv"))
     files = os.listdir(DATA_DIR)
     files.remove('processed_data_inner.csv')
     files.remove('processed_data_outer.csv')
+    files.remove('data_01.csv')
     files.remove('README.txt')
 
     # predictor = TemperaturePredictor(instance)
@@ -39,26 +40,27 @@ def main():
 
     in_neurons = len(x_label)
     out_neurons = len(y_label)
-    hidden_neurons = 50
-    data_interval = 50
+    data_interval = 12
+    hidden_neurons = data_interval * 10
 
-    try:
-        model = load_model("model.h5")
-    except Exception:
-        model = Sequential()
-        model.add(LSTM(hidden_neurons, return_sequences=False,
-                       input_shape=(None, in_neurons), activation='sigmoid'))
-        model.add(Dense(out_neurons, input_dim=hidden_neurons, activation="linear"))
-        model.add(Activation("linear"))
-        model.compile(loss="mean_squared_error", optimizer="rmsprop")
+    model = Sequential()
+    model.add(LSTM(hidden_neurons, return_sequences=False, input_shape=(None, in_neurons)))
+    model.add(Dense(hidden_neurons))
+    model.add(Dense(out_neurons))
+    model.compile(loss="mean_squared_error",
+                  optimizer=keras.optimizers.RMSprop(lr=0.00005, rho=0.9, epsilon=1e-08, decay=0.0))
     model.summary()
 
     x_data = []
     y_data = []
     test_index = random.randint(0, len(x_raw)-1)
-    # test_index = len(x_raw)-1
-    x_t_data = x_raw.pop(test_index)
-    y_t_data = y_raw.pop(test_index)
+    test_index = len(x_raw)-1
+    # x_t_data = x_raw.pop(test_index)
+    # y_t_data = y_raw.pop(test_index)
+    x_t_data = x_raw[10]
+    y_t_data = y_raw[10]
+    x_raw = x_raw[10:11]
+    y_raw = y_raw[10:11]
     for idx in range(len(x_raw)):
         x = x_raw[idx]
         y = y_raw[idx]
@@ -75,17 +77,17 @@ def main():
     print("training y: ", np.shape(yy_train))
     print("testing x: ", np.shape(xx_test))
     print("testing y: ", np.shape(yy_test))
-    model.fit(xx_train, yy_train, batch_size=50, epochs=5, validation_split=0.05, verbose=2)
+    model.fit(xx_train, yy_train, batch_size=1, epochs=25, verbose=1)
     model.save("model.h5")
     model.save_weights("model_w.h5")
 
     predicted = model.predict(xx_test)
 
     plt.rcParams["figure.figsize"] = (17, 9)
-    plt.plot(predicted[:100][:, 0], "--")
-    plt.plot(predicted[:100][:, 1], "--")
-    plt.plot(yy_test[:100][:, 0], ":")
-    plt.plot(yy_test[:100][:, 1], ":")
+    plt.plot(predicted[:][:, 0], "--")
+    # plt.plot(predicted[:100][:, 1], "--")
+    plt.plot(yy_test[:][:, 0], ":")
+    # plt.plot(yy_test[:100][:, 1], ":")
     legend = ["Pred_" + l for l in y_label] + ["Real_" + l for l in y_label]
     plt.legend(legend)
     plt.show()
